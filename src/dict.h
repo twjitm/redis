@@ -44,41 +44,48 @@
 /* Unused arguments generate annoying warnings... */
 #define DICT_NOTUSED(V) ((void) V)
 
-typedef struct dictEntry {
-    void *key;
-    union {
+typedef struct dictEntry { //字典hash节点
+    void *key; //健
+    union {//值
         void *val;
         uint64_t u64;
         int64_t s64;
         double d;
     } v;
-    struct dictEntry *next;
+    struct dictEntry *next;     // 指向下一个 hash 节点: 解决hash 冲突，采用单项链表的方式
 } dictEntry;
 
 typedef struct dictType {
+     // 计算哈希值函数
     unsigned int (*hashFunction)(const void *key);
+        // 复制键的函数
     void *(*keyDup)(void *privdata, const void *key);
+        // 复制值的函数
     void *(*valDup)(void *privdata, const void *obj);
+        // 对比的函数
     int (*keyCompare)(void *privdata, const void *key1, const void *key2);
+        // 销毁键的函数
     void (*keyDestructor)(void *privdata, void *key);
+        // 销毁值的函数
     void (*valDestructor)(void *privdata, void *obj);
-} dictType;
+} dictType;//字典类型结构
 
 /* This is our hash table structure. Every dictionary has two of this as we
  * implement incremental rehashing, for the old to the new table. */
 typedef struct dictht {
-    dictEntry **table;
-    unsigned long size;
-    unsigned long sizemask;
-    unsigned long used;
-} dictht;
+    dictEntry **table;//节点：存放dictentity 的指针对象的
+    unsigned long size;//hash 表大小
+    unsigned long sizemask;//mask 计算索引值
+    unsigned long used; //被使用的个数
+} dictht; //hash 表
 
-typedef struct dict {
-    dictType *type;
-    void *privdata;
-    dictht ht[2];
+typedef struct dict {// 字典
+    dictType *type;    //类型特定函数
+    void *privdata;    //私有数据
+    dictht ht[2]; //2个表：：：：：for the old to the new table 进行reshing 的时候，
+    //rehash 过程中记录正在转移的键
     long rehashidx; /* rehashing not in progress if rehashidx == -1 */
-    int iterators; /* number of iterators currently running */
+    int iterators; /* number of iterators currently running */ //当前字典正在进行中的迭代器。
 } dict;
 
 /* If safe is set to 1 this is a safe iterator, that means, you can call
@@ -97,7 +104,7 @@ typedef struct dictIterator {
 typedef void (dictScanFunction)(void *privdata, const dictEntry *de);
 
 /* This is the initial size of every hash table */
-#define DICT_HT_INITIAL_SIZE     4
+#define DICT_HT_INITIAL_SIZE     4 //hash 表初始化长度
 
 /* ------------------------------- Macros ------------------------------------*/
 #define dictFreeVal(d, entry) \

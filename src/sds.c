@@ -52,15 +52,15 @@ sds sdsnewlen(const void *init, size_t initlen) {
     struct sdshdr *sh;
 
     if (init) {
-        sh = zmalloc(sizeof(struct sdshdr)+initlen+1);
+        sh = zmalloc(sizeof(struct sdshdr)+initlen+1);//分配内存
     } else {
-        sh = zcalloc(sizeof(struct sdshdr)+initlen+1);
+        sh = zcalloc(sizeof(struct sdshdr)+initlen+1);//init 为null，分配内存并初始化为0
     }
-    if (sh == NULL) return NULL;
+    if (sh == NULL) return NULL;//失败
     sh->len = initlen;
     sh->free = 0;
     if (initlen && init)
-        memcpy(sh->buf, init, initlen);
+        memcpy(sh->buf, init, initlen);//连接新的内存空间
     sh->buf[initlen] = '\0';
     return (char*)sh->buf;
 }
@@ -78,12 +78,12 @@ sds sdsnew(const char *init) {
 }
 
 /* Duplicate an sds string. */
-sds sdsdup(const sds s) {
+sds sdsdup(const sds s) {//拷贝sds
     return sdsnewlen(s, sdslen(s));
 }
 
 /* Free an sds string. No operation is performed if 's' is NULL. */
-void sdsfree(sds s) {
+void sdsfree(sds s) {//释放内存
     if (s == NULL) return;
     zfree(s-sizeof(struct sdshdr));
 }
@@ -102,7 +102,7 @@ void sdsfree(sds s) {
  * The output will be "2", but if we comment out the call to sdsupdatelen()
  * the output will be "6" as the string was modified but the logical length
  * remains 6 bytes. */
-void sdsupdatelen(sds s) {
+void sdsupdatelen(sds s) {//更新字符串长度、可用空间等
     struct sdshdr *sh = (void*) (s-(sizeof(struct sdshdr)));
     int reallen = strlen(s);
     sh->free += (sh->len-reallen);
@@ -113,7 +113,7 @@ void sdsupdatelen(sds s) {
  * However all the existing buffer is not discarded but set as free space
  * so that next append operations will not require allocations up to the
  * number of bytes previously available. */
-void sdsclear(sds s) {
+void sdsclear(sds s) {//清空字符串
     struct sdshdr *sh = (void*) (s-(sizeof(struct sdshdr)));
     sh->free += sh->len;
     sh->len = 0;
@@ -128,17 +128,21 @@ void sdsclear(sds s) {
  * by sdslen(), but only the free buffer space we have. */
 sds sdsMakeRoomFor(sds s, size_t addlen) {
     struct sdshdr *sh, *newsh;
-    size_t free = sdsavail(s);
+    size_t free = sdsavail(s); //剩余的内存空间
     size_t len, newlen;
 
-    if (free >= addlen) return s;
+    if (free >= addlen) return s; //当前需要的内存空间有富裕的
     len = sdslen(s);
     sh = (void*) (s-(sizeof(struct sdshdr)));
     newlen = (len+addlen);
+    // sds规定：如果扩展后的字符串总长度小于1M则新字符串长度为扩展后的两倍
+    // 如果大于1M，则新的总长度为扩展后的总长度加上1M
+    // 这样做的目的是减少Redis内存分配的次数，同时尽量节省空间
     if (newlen < SDS_MAX_PREALLOC)
         newlen *= 2;
     else
         newlen += SDS_MAX_PREALLOC;
+        //分配内存并且将原来的数据拷贝到新的内容空间
     newsh = zrealloc(sh, sizeof(struct sdshdr)+newlen+1);
     if (newsh == NULL) return NULL;
 
@@ -156,7 +160,7 @@ sds sdsRemoveFreeSpace(sds s) {
     struct sdshdr *sh;
 
     sh = (void*) (s-(sizeof(struct sdshdr)));
-    sh = zrealloc(sh, sizeof(struct sdshdr)+sh->len+1);
+    sh = zrealloc(sh, sizeof(struct sdshdr)+sh->len+1);//头部+数据+1
     sh->free = 0;
     return sh->buf;
 }
@@ -238,18 +242,17 @@ sds sdsgrowzero(sds s, size_t len) {
  * references must be substituted with the new pointer returned by the call. */
 sds sdscatlen(sds s, const void *t, size_t len) {
     struct sdshdr *sh;
-    size_t curlen = sdslen(s);
+    size_t curlen = sdslen(s); //sds 长度
 
-    s = sdsMakeRoomFor(s,len);
+    s = sdsMakeRoomFor(s,len);//扩容
     if (s == NULL) return NULL;
     sh = (void*) (s-(sizeof(struct sdshdr)));
-    memcpy(s+curlen, t, len);
-    sh->len = curlen+len;
-    sh->free = sh->free-len;
+    memcpy(s+curlen, t, len);// 连接新字符串
+    sh->len = curlen+len;//新的长度
+    sh->free = sh->free-len;//甚于空间
     s[curlen+len] = '\0';
     return s;
 }
-
 /* Append the specified null termianted C string to the sds string 's'.
  *
  * After the call, the passed sds string is no longer valid and all the
@@ -272,12 +275,14 @@ sds sdscpylen(sds s, const char *t, size_t len) {
     struct sdshdr *sh = (void*) (s-(sizeof(struct sdshdr)));
     size_t totlen = sh->free+sh->len;
 
-    if (totlen < len) {
+//当前总长度<所需要长度
+    if (totlen < len) {//扩展s
         s = sdsMakeRoomFor(s,len-sh->len);
         if (s == NULL) return NULL;
         sh = (void*) (s-(sizeof(struct sdshdr)));
         totlen = sh->free+sh->len;
     }
+    //连接内容
     memcpy(s, t, len);
     s[len] = '\0';
     sh->len = len;

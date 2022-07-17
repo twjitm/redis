@@ -19,6 +19,7 @@
  * <zltail> is the offset to the last entry in the list. This allows a pop
  * operation on the far side of the list without the need for full traversal.
  *
+
  * <zllen> is the number of entries.When this value is larger than 2**16-2,
  * we need to traverse the entire list to know how many items it holds.
  *

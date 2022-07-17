@@ -32,25 +32,28 @@
 #define __ADLIST_H__
 
 /* Node, List, and Iterator are the only data structures used currently. */
-
+//链表的一个节点定义
 typedef struct listNode {
-    struct listNode *prev;
-    struct listNode *next;
-    void *value;
+    struct listNode *prev; //前置节点
+    struct listNode *next;//后置节点
+    void *value;//当前节点值
 } listNode;
 
-typedef struct listIter {
+typedef struct listIter {//列表迭代器
+    // 当前迭代到的节点
     listNode *next;
+       // 迭代的方向
     int direction;
 } listIter;
 
+//
 typedef struct list {
-    listNode *head;
-    listNode *tail;
-    void *(*dup)(void *ptr);
-    void (*free)(void *ptr);
-    int (*match)(void *ptr, void *key);
-    unsigned long len;
+    listNode *head; //头
+    listNode *tail;//尾
+    void *(*dup)(void *ptr); //拷贝函数
+    void (*free)(void *ptr); //释放节点函数
+    int (*match)(void *ptr, void *key);//判断两个节点是否相等函数
+    unsigned long len; //列表长度
 } list;
 
 /* Functions implemented as macros */
@@ -70,8 +73,8 @@ typedef struct list {
 #define listGetMatchMethod(l) ((l)->match)
 
 /* Prototypes */
-list *listCreate(void);
-void listRelease(list *list);
+list *listCreate(void);//创建一个链表
+void listRelease(list *list);//释放链表
 list *listAddNodeHead(list *list, void *value);
 list *listAddNodeTail(list *list, void *value);
 list *listInsertNode(list *list, listNode *old_node, void *value, int after);

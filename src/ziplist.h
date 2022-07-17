@@ -15,6 +15,7 @@
  *     to endorse or promote products derived from this software without
  *     specific prior written permission.
  *
+
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,7 +32,7 @@
 #define ZIPLIST_HEAD 0
 #define ZIPLIST_TAIL 1
 
-unsigned char *ziplistNew(void);
+unsigned char *ziplistNew(void);//创建
 unsigned char *ziplistPush(unsigned char *zl, unsigned char *s, unsigned int slen, int where);
 unsigned char *ziplistIndex(unsigned char *zl, int index);
 unsigned char *ziplistNext(unsigned char *zl, unsigned char *p);
