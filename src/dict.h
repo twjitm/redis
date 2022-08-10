@@ -75,8 +75,8 @@ typedef struct dictType {
 typedef struct dictht {
     dictEntry **table;//节点：存放dictentity 的指针对象的
     unsigned long size;//hash 表大小
-    unsigned long sizemask;//mask 计算索引值
-    unsigned long used; //被使用的个数
+    unsigned long sizemask;//mask 计算索引值 hash= hash&sizemask
+    unsigned long used; //被使用的个数（总数）
 } dictht; //hash 表
 
 typedef struct dict {// 字典
@@ -85,7 +85,7 @@ typedef struct dict {// 字典
     dictht ht[2]; //2个表：：：：：for the old to the new table 进行reshing 的时候，
     //rehash 过程中记录正在转移的键
     long rehashidx; /* rehashing not in progress if rehashidx == -1 */
-    int iterators; /* number of iterators currently running */ //当前字典正在进行中的迭代器。
+    int iterators; /* number of iterators currently running */ //当前字典正在进行中的迭代器。（计数）
 } dict;
 
 /* If safe is set to 1 this is a safe iterator, that means, you can call
@@ -94,11 +94,11 @@ typedef struct dict {// 字典
  * should be called while iterating. */
 typedef struct dictIterator {
     dict *d;
-    long index;
-    int table, safe;
-    dictEntry *entry, *nextEntry;
+    long index;//索引
+    int table, safe; ////当safe为true时会暂停rehashing，table，表
+    dictEntry *entry, *nextEntry;//当前迭代器正在的entity
     /* unsafe iterator fingerprint for misuse detection. */
-    long long fingerprint;
+    long long fingerprint; //指纹hash
 } dictIterator;
 
 typedef void (dictScanFunction)(void *privdata, const dictEntry *de);
@@ -138,6 +138,7 @@ typedef void (dictScanFunction)(void *privdata, const dictEntry *de);
         entry->key = (_key_); \
 } while(0)
 
+    //key 比较
 #define dictCompareKeys(d, key1, key2) \
     (((d)->type->keyCompare) ? \
         (d)->type->keyCompare((d)->privdata, key1, key2) : \

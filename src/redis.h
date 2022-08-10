@@ -193,7 +193,7 @@ typedef long long mstime_t; /* millisecond time type. */
 #define REDIS_ENCODING_LINKEDLIST 4 /* Encoded as regular linked list */
 #define REDIS_ENCODING_ZIPLIST 5 /* Encoded as ziplist */
 #define REDIS_ENCODING_INTSET 6  /* Encoded as intset */
-#define REDIS_ENCODING_SKIPLIST 7  /* Encoded as skiplist */
+#define REDIS_ENCODING_SKIPLIST 7  /* Encoded as skiplist */ //跳跃表编码方式
 #define REDIS_ENCODING_EMBSTR 8  /* Embedded sds string encoding */
 
 /* Defines related to the dump file format. To store 32 bits lengths for short
@@ -599,21 +599,21 @@ struct sharedObjectsStruct {
 };
 
 /* ZSETs use a specialized version of Skiplists */
-typedef struct zskiplistNode {
-    robj *obj;
-    double score;
-    struct zskiplistNode *backward;
+typedef struct zskiplistNode {//跳跃表节点
+    robj *obj;// 成员对象
+    double score;//积分
+    struct zskiplistNode *backward; //回退指针
     struct zskiplistLevel {
-        struct zskiplistNode *forward;
-        unsigned int span;
-    } level[];
+        struct zskiplistNode *forward;//前进
+        unsigned int span;//跨度
+    } level[];//层
 } zskiplistNode;
 
 typedef struct zskiplist {
-    struct zskiplistNode *header, *tail;
-    unsigned long length;
-    int level;
-} zskiplist;
+    struct zskiplistNode *header, *tail;//头/尾指针
+    unsigned long length;//长度
+    int level;// 表中层数最大的节点层数
+} zskiplist;//跳跃表
 
 typedef struct zset {
     dict *dict;
